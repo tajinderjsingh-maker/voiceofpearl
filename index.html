@@ -150,7 +150,6 @@ window.addEventListener("load", ()=>{
   // autoplay muted (always allowed)
   audio.muted = true;
   audio.play().then(()=>{
-    // attempt unmute after slight delay (may still be blocked by browser)
     setTimeout(()=>{
       audio.muted = false;
       audio.play().catch(()=>{
@@ -161,7 +160,6 @@ window.addEventListener("load", ()=>{
     console.warn("Autoplay blocked until interaction");
   });
 });
-})
 
 // start audio on user interaction (reliable)
 function startAudio(){
