@@ -19,14 +19,14 @@ main{position:relative;z-index:2}
 
 /* ----- 3D CARD (4:6) ----- */
 .card3d{
+  filter:
+    drop-shadow(0 10px 25px rgba(0,0,0,0.5))
+    drop-shadow(0 0 20px rgba(239,68,68,0.35));
   width:clamp(220px,60vw,320px);
   aspect-ratio:4/6;
   position:relative;
   transform-style:preserve-3d;
   transition:transform 0.2s linear;
-  filter:
-    drop-shadow(0 10px 25px rgba(0,0,0,0.5))
-    drop-shadow(0 0 20px rgba(239,68,68,0.25));
 }
 
 .face{
