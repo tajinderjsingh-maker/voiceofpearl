@@ -31,8 +31,8 @@ animation:bgMove 25s linear infinite;
 .card img,.card video{width:100%;height:100%;object-fit:cover;pointer-events:none}
 
 .center{transform:translateX(0) scale(1);z-index:3;opacity:1}
-.left{transform:translateX(calc(-1 * min(220px, 28vw))) scale(.88) rotateY(12deg);z-index:2;opacity:.6}
-.right{transform:translateX(min(220px, 28vw)) scale(.88) rotateY(-12deg);z-index:2;opacity:.6}
+.left{transform:translateX(calc(-1 * min(120px, 18vw))) scale(.9) rotateY(10deg);z-index:2;opacity:.7}
+.right{transform:translateX(min(120px, 18vw)) scale(.9) rotateY(-10deg);z-index:2;opacity:.7}
 .hiddenL{transform:translateX(calc(-1 * min(420px, 60vw))) scale(.8);opacity:0}
 .hiddenR{transform:translateX(min(420px, 60vw)) scale(.8);opacity:0}
 
@@ -138,18 +138,32 @@ carousel.addEventListener('wheel',e=>{
  targetIndex=Math.max(0,Math.min(TOTAL-1,targetIndex))
 },{passive:false})
 
-// touch
-let startX=0, touching=false
-carousel.addEventListener('touchstart',e=>{touching=true;startX=e.touches[0].clientX})
+// improved touch drag (smooth thumb control)
+let dragStartX = 0
+let startIndex = 0
+let dragging = false
+
+carousel.addEventListener('touchstart',e=>{
+ dragging = true
+ dragStartX = e.touches[0].clientX
+ startIndex = targetIndex
+})
+
 carousel.addEventListener('touchmove',e=>{
- if(!touching) return
+ if(!dragging) return
  e.preventDefault()
- const dx=startX-e.touches[0].clientX
- targetIndex += dx*0.018
- startX=e.touches[0].clientX
- targetIndex=Math.max(0,Math.min(TOTAL-1,targetIndex))
+
+ const currentX = e.touches[0].clientX
+ const delta = dragStartX - currentX
+
+ // smooth mapping (no jumpy accumulation)
+ targetIndex = startIndex + delta * 0.01
+ targetIndex = Math.max(0, Math.min(TOTAL-1, targetIndex))
 },{passive:false})
-carousel.addEventListener('touchend',()=>touching=false)
+
+carousel.addEventListener('touchend',()=>{
+ dragging = false
+})=>touching=false)
 
 // YouTube control
 const videoSection=document.getElementById('videoSection')
@@ -164,7 +178,7 @@ videoSection.innerHTML = isLocal ? `
 <div class="video-title">School of Complete Professionals</div>
 </div>
 <div class="video-card">
-<iframe src="https://youtu.be/998spY0pE6c" allowfullscreen></iframe>
+<iframe src="https://www.youtube.com/embed/998spY0pE6c" allowfullscreen></iframe>
 <div class="video-title">Aaj Ki Rani</div>
 </div>
 `
