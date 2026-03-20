@@ -68,7 +68,9 @@ animation:bgMove 25s linear infinite;
 <script>
 const TOTAL=89
 const data=Array.from({length:TOTAL},(_,i)=>{
+ if(i===44) return {type:'video',src:'cancerday.mp4'}
  if(i===86) return {type:'video',src:'video86.mp4'}
+ if(i===87) return {type:'video',src:'FDCI.mp4'}
  if(i===88) return {type:'video',src:'video88.mp4'}
  return {type:'image',src:`images/slide${i}.webp`}
 })
@@ -124,17 +126,20 @@ function render(){
 }
 
 function animate(){
- index += (targetIndex - index) * 0.12
+ index += (targetIndex - index) * 0.08 /* smoother */
  render()
  requestAnimationFrame(animate)
 }
 animate()
 
 // AUTO PLAY (smooth loop)
+let autoPlay=true
+
 setInterval(()=>{
+ if(dragging) return /* pause during manual interaction */
  targetIndex += 1
  if(targetIndex >= TOTAL) targetIndex = 0
-},3000)
+},2000)
 
 // wheel
 carousel.addEventListener('wheel',e=>{
