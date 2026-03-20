@@ -9,7 +9,6 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial;background:#020617;color:#fff;overflow:hidden}
 
-/* reduce GPU drain on mobile */
 @media (prefers-reduced-motion: reduce){
  body::before{animation:none}
 }
@@ -31,7 +30,7 @@ animation:bgMove 30s linear infinite}
 
 .carousel{position:relative;width:100%;height:min(70vh,420px);overflow:hidden;touch-action:none;cursor:grab}
 
-.card{position:absolute;left:50%;top:50%;width:clamp(180px,70vw,252px);aspect-ratio:252/370;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.2);background:#000;transform:translate(-50%,-50%);}
+.card{position:absolute;left:50%;top:50%;width:clamp(180px,70vw,252px);aspect-ratio:252/370;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.2);background:#000;transform:translate(-50%,-50%)}
 .card img,.card video{width:100%;height:100%;object-fit:cover;pointer-events:none}
 
 .hint{position:absolute;bottom:80px;font-size:14px;opacity:.85;display:flex;align-items:center;gap:8px}
@@ -76,9 +75,8 @@ const data = Array.from({length:TOTAL},(_,i)=>{
 })
 
 const carousel=document.getElementById('carousel')
-let index=0, target=0, lastIndex=-1, dragging=false
+let index=0, target=0, dragging=false
 
-// cache video durations (prevents repeated temp video creation)
 const videoDurationCache = {}
 
 function createCard(item, isCenter){
@@ -109,10 +107,7 @@ function createCard(item, isCenter){
 }
 
 function render(){
- const current=Math.round(index)
- if(current===lastIndex) return
- lastIndex=current
-
+ const current=Math.floor(index)
  carousel.innerHTML=''
 
  for(let i=current-3;i<=current+3;i++){
@@ -123,19 +118,18 @@ function render(){
 
   const card=createCard(data[i], abs<0.5)
 
-  const x = offset * 85
-  const scale = 1 - Math.min(abs*0.1,0.25)
-  const rotateY = -offset * 14
-  const rotateX = (target-index)*4
-  const opacity = abs>3 ? 0 : (abs<0.5 ? 1 : 0.85)
+  const x = offset * 95
+  const scale = 1 - Math.min(Math.pow(abs,1.2)*0.12,0.3)
+  const rotateY = -offset * 15
+  const rotateX = (target-index)*3
+  const opacity = abs>3 ? 0 : (abs<0.5 ? 1 : 0.75)
 
   card.style.transform = `translate(calc(-50% + ${x}px), -50%) scale(${scale}) rotateY(${rotateY}deg) rotateX(${rotateX}deg)`
   card.style.opacity = opacity
-  card.style.zIndex = 10 - Math.round(abs*3)
+  card.style.zIndex = 20 - Math.round(abs*5)
 
-  // lighter shadow (performance + clarity)
-  const shadow = 10 + (1-abs)*20
-  card.style.boxShadow = `0 ${shadow}px ${shadow*1.5}px rgba(0,0,0,0.5)`
+  const shadow = 12 + (1-abs)*28
+  card.style.boxShadow = `0 ${shadow}px ${shadow*1.5}px rgba(0,0,0,0.55)`
 
   carousel.appendChild(card)
  }
@@ -143,14 +137,13 @@ function render(){
 
 function animate(){
  const diff = target - index
- index += diff * 0.08
- if(Math.abs(diff)<0.001) index=target
+ index += diff * 0.06
+ if(Math.abs(diff) < 0.0005) index = target
  render()
  requestAnimationFrame(animate)
 }
 animate()
 
-// efficient autoplay (no temp video spam)
 let autoTimer=null
 function scheduleNext(){
  clearTimeout(autoTimer)
@@ -174,11 +167,10 @@ function scheduleNext(){
 }
 scheduleNext()
 
-// pointer (stable)
-let startX=0,lastX=0,velocity=0
+let lastX=0,velocity=0
 carousel.addEventListener('pointerdown',e=>{
  dragging=true
- startX=lastX=e.clientX
+ lastX=e.clientX
  velocity=0
  carousel.setPointerCapture(e.pointerId)
 })
@@ -186,8 +178,9 @@ carousel.addEventListener('pointerdown',e=>{
 window.addEventListener('pointermove',e=>{
  if(!dragging) return
  const dx=e.clientX-lastX
- velocity=dx
- target-=dx*0.007
+ const smoothDx = dx * 0.6
+ velocity = smoothDx
+ target -= smoothDx * 0.006
  lastX=e.clientX
  target=Math.max(0,Math.min(TOTAL-1,target))
 })
@@ -196,12 +189,11 @@ window.addEventListener('pointerup',e=>{
  if(!dragging) return
  dragging=false
  try{carousel.releasePointerCapture(e.pointerId)}catch{}
- target-=Math.max(Math.min(velocity,15),-15)*0.02
+ target -= Math.max(Math.min(velocity,10),-10)*0.015
  target=Math.max(0,Math.min(TOTAL-1,target))
  scheduleNext()
 })
 
-// audio
 const audio=document.getElementById('bgAudio')
 const btn=document.getElementById('audioBtn')
 window.addEventListener('click',()=>audio.play().catch(()=>{}),{once:true})
