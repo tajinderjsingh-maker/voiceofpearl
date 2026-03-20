@@ -27,7 +27,7 @@ animation:bgMove 25s linear infinite;
 .carousel{display:flex;align-items:center;justify-content:center;position:relative;width:100%;height:min(70vh,420px);overflow:hidden;touch-action:none;cursor:grab}
 .carousel:active{cursor:grabbing}
 
-.card{position:absolute;width:clamp(180px,70vw,252px);aspect-ratio:252/370;border-radius:14px;overflow:hidden;transition:all .5s cubic-bezier(.2,.8,.2,1);border:1px solid rgba(255,255,255,0.25);background:#000}
+.card{position:absolute;width:clamp(180px,70vw,252px);aspect-ratio:252/370;border-radius:14px;overflow:hidden;transition:all .4s ease;border:1px solid rgba(255,255,255,0.25);background:#000}
 .card img,.card video{width:100%;height:100%;object-fit:cover;pointer-events:none}
 
 .center{transform:translateX(0) scale(1);z-index:3;opacity:1}
@@ -95,8 +95,9 @@ function createCard(item){
 }
 
 // nav
-document.querySelector('.leftNav').onclick=()=> targetIndex=Math.max(0,targetIndex-1)
-document.querySelector('.rightNav').onclick=()=> targetIndex=Math.min(TOTAL-1,targetIndex+1)
+
+document.querySelector('.leftNav').onclick=()=>{ targetIndex=Math.max(0,targetIndex-1) }
+document.querySelector('.rightNav').onclick=()=>{ targetIndex=Math.min(TOTAL-1,targetIndex+1) }
 
 function render(){
  carousel.innerHTML=''
@@ -124,12 +125,16 @@ function render(){
 
 function animate(){
  index += (targetIndex - index) * 0.12
- const velocity = targetIndex - index
- carousel.style.transform = `rotateX(${velocity*2}deg)`
  render()
  requestAnimationFrame(animate)
 }
 animate()
+
+// AUTO PLAY (smooth loop)
+setInterval(()=>{
+ targetIndex += 1
+ if(targetIndex >= TOTAL) targetIndex = 0
+},3000)
 
 // wheel
 carousel.addEventListener('wheel',e=>{
@@ -138,32 +143,29 @@ carousel.addEventListener('wheel',e=>{
  targetIndex=Math.max(0,Math.min(TOTAL-1,targetIndex))
 },{passive:false})
 
-// improved touch drag (smooth thumb control)
-let dragStartX = 0
-let startIndex = 0
-let dragging = false
+// TOUCH FIXED (clean + smooth)
+let startX=0
+let startIndex=0
+let dragging=false
 
 carousel.addEventListener('touchstart',e=>{
- dragging = true
- dragStartX = e.touches[0].clientX
- startIndex = targetIndex
+ dragging=true
+ startX=e.touches[0].clientX
+ startIndex=targetIndex
 })
 
 carousel.addEventListener('touchmove',e=>{
  if(!dragging) return
  e.preventDefault()
 
- const currentX = e.touches[0].clientX
- const delta = dragStartX - currentX
-
- // smooth mapping (no jumpy accumulation)
- targetIndex = startIndex + delta * 0.01
- targetIndex = Math.max(0, Math.min(TOTAL-1, targetIndex))
+ const dx=startX - e.touches[0].clientX
+ targetIndex = startIndex + dx * 0.01
+ targetIndex = Math.max(0,Math.min(TOTAL-1,targetIndex))
 },{passive:false})
 
 carousel.addEventListener('touchend',()=>{
- dragging = false
-})=>touching=false)
+ dragging=false
+})
 
 // YouTube control
 const videoSection=document.getElementById('videoSection')
