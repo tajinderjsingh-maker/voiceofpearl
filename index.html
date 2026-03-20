@@ -44,12 +44,17 @@ perspective:1200px;position:relative;z-index:2;
 /* CAROUSEL */
 .carousel{
 display:flex;align-items:center;justify-content:center;position:relative;
-width:100%;height:400px;
+width:100%;height:min(70vh,420px);
+overflow:hidden;
 }
 
 .card{
-position:absolute;width:252px;height:370px;border-radius:14px;
-overflow:hidden;transition:all .5s cubic-bezier(.2,.8,.2,1);
+position:absolute;
+width:clamp(180px,70vw,252px);
+aspect-ratio:252/370;
+border-radius:14px;
+overflow:hidden;
+transition:all .5s cubic-bezier(.2,.8,.2,1);
 border:1px solid rgba(255,255,255,0.25);
 background:#000;
 }
@@ -57,10 +62,10 @@ background:#000;
 .card img,.card video{width:100%;height:100%;object-fit:cover}
 
 .center{transform:translateX(0) scale(1);z-index:3;opacity:1}
-.left{transform:translateX(-140px) scale(.88) rotateY(12deg);z-index:2;opacity:.6}
-.right{transform:translateX(140px) scale(.88) rotateY(-12deg);z-index:2;opacity:.6}
-.hiddenL{transform:translateX(-260px) scale(.8);opacity:0}
-.hiddenR{transform:translateX(260px) scale(.8);opacity:0}
+.left{transform:translateX(-40vw) scale(.88) rotateY(12deg);z-index:2;opacity:.6}
+.right{transform:translateX(40vw) scale(.88) rotateY(-12deg);z-index:2;opacity:.6}
+.hiddenL{transform:translateX(-80vw) scale(.8);opacity:0}
+.hiddenR{transform:translateX(80vw) scale(.8);opacity:0}
 
 /* shadow overlap */
 .card::after{
@@ -128,6 +133,8 @@ const data=Array.from({length:TOTAL},(_,i)=>{
 
 const carousel=document.getElementById('carousel')
 let index=0
+let targetIndex=0
+let isAnimating=false
 
 function createCard(item){
  const el=document.createElement('div')
@@ -152,45 +159,60 @@ function render(){
  carousel.innerHTML=''
  cards=[]
 
- for(let i=index-2;i<=index+2;i++){
+ const current = Math.round(index)
+
+ for(let i=current-2;i<=current+2;i++){
   if(!data[i]) continue
   const card=createCard(data[i])
 
-  if(i===index) card.classList.add('center')
-  else if(i===index-1) card.classList.add('left')
-  else if(i===index+1) card.classList.add('right')
-  else if(i<index) card.classList.add('hiddenL')
+  if(i===current) card.classList.add('center')
+  else if(i===current-1) card.classList.add('left')
+  else if(i===current+1) card.classList.add('right')
+  else if(i<current) card.classList.add('hiddenL')
   else card.classList.add('hiddenR')
 
   carousel.appendChild(card)
   cards.push(card)
  }
 
- // autoplay center video
  const centerCard=cards.find(c=>c.classList.contains('center'))
  const vid=centerCard?.querySelector('video')
  if(vid) vid.play().catch(()=>{})
 }
 
-function next(){if(index<TOTAL-1){index++;render()}}
-function prev(){if(index>0){index--;render()}}
+function animate(){
+  index += (targetIndex - index) * 0.1
+  render()
+  requestAnimationFrame(animate)
+}
+
+animate()
+
+function next(){if(targetIndex<TOTAL-1){targetIndex++}}
+function prev(){if(targetIndex>0){targetIndex--}}
+
 
 // wheel horizontal feel
 window.addEventListener('wheel',e=>{
  if(Math.abs(e.deltaY)>5){
-  if(e.deltaY>0) next()
-  else prev()
+  if(e.deltaY>0) targetIndex+=0.25
+  else targetIndex-=0.25
+
+  if(targetIndex<0) targetIndex=0
+  if(targetIndex>TOTAL-1) targetIndex=TOTAL-1
  }
 })
 
 // touch
 let startX=0
 window.addEventListener('touchstart',e=>startX=e.touches[0].clientX)
-window.addEventListener('touchend',e=>{
- const dx=startX-e.changedTouches[0].clientX
- if(Math.abs(dx)<30) return
- if(dx>0) next()
- else prev()
+window.addEventListener('touchmove',e=>{
+ const dx=startX-e.touches[0].clientX
+ targetIndex += dx*0.01
+ startX = e.touches[0].clientX
+
+ if(targetIndex<0) targetIndex=0
+ if(targetIndex>TOTAL-1) targetIndex=TOTAL-1
 })
 
 render()
