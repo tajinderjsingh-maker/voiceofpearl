@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Newsletter Experience</title>
+<title>Voice of Pearl</title>
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#020617;color:#fff;overflow-x:hidden}
+body{margin:0;font-family:Arial;background:#020617;color:#fff;overflow:hidden}
 
 body::before{content:"";position:fixed;inset:0;z-index:0;
 background:
@@ -16,27 +16,26 @@ radial-gradient(circle at 80% 70%, rgba(59,130,246,0.25), transparent 40%);
 animation:bgMove 25s linear infinite}
 @keyframes bgMove{0%{transform:translate(0,0)}50%{transform:translate(-5%,5%)}100%{transform:translate(0,0)}}
 
-.logoWrap{position:fixed;top:4px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:5}
+.logoWrap{position:fixed;top:4px;left:50%;transform:translateX(-50%);z-index:5;text-align:center}
 .logo{width:min(49vw,294px)}
-.tagline{margin-top:22px;font-size:12px;opacity:.7}
+.tagline{margin-top:0;font-size:12px;opacity:.7}
+
+.audioBtn{position:fixed;top:12px;right:16px;z-index:10;cursor:pointer;font-size:18px;opacity:.8}
 
 .stage{height:100vh;display:flex;align-items:center;justify-content:center;perspective:1200px;position:relative;z-index:2}
 
 .carousel{position:relative;width:100%;height:min(70vh,420px);overflow:hidden;touch-action:none}
 
-.card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:clamp(180px,70vw,252px);aspect-ratio:252/370;border-radius:14px;overflow:hidden;transition:.4s ease;border:1px solid rgba(255,255,255,0.25);background:#000}
+.card{position:absolute;left:50%;top:50%;width:clamp(180px,70vw,252px);aspect-ratio:252/370;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.25);background:#000;transform:translate(-50%,-50%);transition:transform .5s cubic-bezier(.22,.61,.36,1),opacity .4s}
 .card img,.card video{width:100%;height:100%;object-fit:cover;pointer-events:none}
 
-.center{transform:translate(-50%,-50%) scale(1);z-index:3}
-.left{transform:translate(calc(-50% - 100px),-50%) scale(.9) rotateY(10deg);z-index:2;opacity:.7}
-.right{transform:translate(calc(-50% + 100px),-50%) scale(.9) rotateY(-10deg);z-index:2;opacity:.7}
-.hiddenL{transform:translate(calc(-50% - 280px),-50%) scale(.8);opacity:0}
-.hiddenR{transform:translate(calc(-50% + 280px),-50%) scale(.8);opacity:0}
+.center{transform:translate(-50%,-50%) scale(1) rotateY(0deg);z-index:3;opacity:1}
+.left{transform:translate(calc(-50% - 90px),-50%) scale(.9) rotateY(12deg);z-index:2;opacity:.7}
+.right{transform:translate(calc(-50% + 90px),-50%) scale(.9) rotateY(-12deg);z-index:2;opacity:.7}
+.hiddenL{transform:translate(calc(-50% - 260px),-50%) scale(.8);opacity:0}
+.hiddenR{transform:translate(calc(-50% + 260px),-50%) scale(.8);opacity:0}
 
-.hint{position:absolute;bottom:56px;font-size:14px;opacity:.6}
-.nav{position:absolute;top:50%;transform:translateY(-50%);font-size:28px;opacity:.4;cursor:pointer}
-.leftNav{left:20px}
-.rightNav{right:20px}
+.hint{position:absolute;bottom:40px;font-size:14px;opacity:.6}
 </style>
 </head>
 <body>
@@ -46,28 +45,30 @@ animation:bgMove 25s linear infinite}
 <div class="tagline">Celebrating 100 weeks</div>
 </div>
 
+<div class="audioBtn" id="audioBtn">🔊</div>
+<audio id="bgAudio" src="audio.mp3" loop></audio>
+
 <div class="stage">
 <div class="carousel" id="carousel"></div>
 <div class="hint">← Swipe →</div>
-<div class="nav leftNav">‹</div>
-<div class="nav rightNav">›</div>
 </div>
 
 <script>
-const TOTAL=89
+const TOTAL=89 // 0–88
 
-// FINAL CLEAN DATA (no fallback, direct paths)
-const data=Array.from({length:TOTAL},(_,i)=>{
- if(i===44) return {type:'video',src:'cancerday.mp4'}
- if(i===86) return {type:'video',src:'video86.mp4'}
- if(i===87) return {type:'video',src:'FDCI.mp4'}
- if(i===88) return {type:'video',src:'video88.mp4'}
- return {type:'image',src:`images/slide${i}.webp`}
+// correct slide mapping
+const data = Array.from({length:TOTAL},(_,i)=>{
+ if(i===20) return {type:'video',src:'slide20.mp4'}
+ if(i===35) return {type:'video',src:'cancerday.mp4'}
+ if(i===84) return {type:'video',src:'video86.mp4'}
+ if(i===88) return {type:'video',src:'FDCI.mp4'}
+ if(i<=87) return {type:'image',src:`images/slide${i}.webp`}
+ return null
 })
 
 const carousel=document.getElementById('carousel')
 let index=0
-let targetIndex=0
+let target=0
 let last=-1
 let dragging=false
 
@@ -77,34 +78,19 @@ function createCard(item){
 
  if(item.type==='video'){
   const v=document.createElement('video')
-
   v.src=item.src
   v.muted=true
-  v.autoplay=true
   v.loop=true
+  v.autoplay=true
   v.playsInline=true
-  v.setAttribute('playsinline','')
   v.preload='auto'
-
-  v.onloadeddata=()=>{
-    v.play().catch(()=>{})
-  }
-
-  v.onerror=()=>{
-    console.error('❌ VIDEO NOT FOUND:', item.src)
-    el.innerHTML='<div style="display:flex;height:100%;align-items:center;justify-content:center;opacity:.6">Missing: '+item.src+'</div>'
-  }
-
-  v.style.objectFit='contain'
+  v.onloadeddata=()=>v.play().catch(()=>{})
   el.appendChild(v)
- }
- else{
+ }else{
   const img=document.createElement('img')
   img.src=item.src
-  img.loading='lazy'
   el.appendChild(img)
  }
-
  return el
 }
 
@@ -130,25 +116,19 @@ function render(){
 }
 
 function animate(){
- index += (targetIndex-index)*0.06
+ index += (target-index)*0.08 // smoother easing
  render()
  requestAnimationFrame(animate)
 }
 animate()
 
-// autoplay
+// autoplay faster
 setInterval(()=>{
  if(dragging) return
- targetIndex=(targetIndex+1)%TOTAL
-},2000)
+ target=(target+1)%TOTAL
+},1800)
 
-// nav
-const leftBtn=document.querySelector('.leftNav')
-const rightBtn=document.querySelector('.rightNav')
-leftBtn.onclick=()=>targetIndex=Math.max(0,targetIndex-1)
-rightBtn.onclick=()=>targetIndex=Math.min(TOTAL-1,targetIndex+1)
-
-// touch
+// touch drag improved
 let startX=0
 carousel.addEventListener('touchstart',e=>{
  dragging=true
@@ -159,16 +139,34 @@ carousel.addEventListener('touchmove',e=>{
  if(!dragging) return
  e.preventDefault()
  const dx=e.touches[0].clientX-startX
- targetIndex-=dx*0.01
+ target -= dx*0.008
  startX=e.touches[0].clientX
- targetIndex=Math.max(0,Math.min(TOTAL-1,targetIndex))
+ target=Math.max(0,Math.min(TOTAL-1,target))
 },{passive:false})
 
 carousel.addEventListener('touchend',()=>dragging=false)
 
-// TESTS
-console.assert(data[44].src==='cancerday.mp4','Slide 44 video path wrong')
-console.assert(data[86].src==='video86.mp4','Slide 86 video path wrong')
+// audio autoplay (with fallback for browser restriction)
+const audio=document.getElementById('bgAudio')
+const btn=document.getElementById('audioBtn')
+
+function playAudio(){
+ audio.play().catch(()=>{})
+}
+
+window.addEventListener('load',playAudio)
+
+document.addEventListener('click',playAudio,{once:true})
+
+btn.onclick=()=>{
+ if(audio.paused){audio.play();btn.innerText='🔊'}
+ else{audio.pause();btn.innerText='🔇'}
+}
+
+// tests
+console.assert(data.length===89,'Total slides incorrect')
+console.assert(data[20].type==='video','Slide 20 should be video')
+console.assert(data[88].type==='video','Slide 88 should be video')
 </script>
 
 </body>
