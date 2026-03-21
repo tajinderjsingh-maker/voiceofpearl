@@ -23,13 +23,18 @@ animation:bgMove 40s linear infinite}
 .stage{height:100vh;display:flex;align-items:center;justify-content:center;perspective:1200px;position:relative;z-index:2}
 .carousel{position:relative;width:100%;height:min(70vh,420px);overflow:hidden;touch-action:none}
 
-.card{position:absolute;left:50%;top:50%;width:clamp(180px,70vw,252px);aspect-ratio:252/370;border-radius:14px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,0.2);}
+.card{position:absolute;left:50%;top:40%;width:clamp(180px,70vw,252px);aspect-ratio:252/370;border-radius:14px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,0.2);}
 .card img,.card video{width:100%;height:100%;object-fit:cover}
 
-.hint{position:absolute;bottom:140px;font-size:14px;opacity:.85;display:flex;gap:8px}
+.hint{position:absolute;bottom:120px;font-size:14px;opacity:.85;display:flex;gap:8px}
 
 /* youtube section */
-.videoSection{padding:20px 20px 40px;display:flex;flex-direction:column;gap:24px;margin-top:-80px}
+.videoSection{padding:20px 20px 40px;display:flex;flex-direction:column;gap:24px;margin-top:-70px}
+
+/* slightly more lift on smaller screens */
+@media (max-width: 480px){
+  .videoSection{margin-top:-90px}
+}
 .videoBlock{display:flex;flex-direction:column;gap:10px}
 .videoBlock iframe{width:100%;height:200px;border-radius:12px;border:none}
 .videoTitle{font-size:14px;opacity:.85}
