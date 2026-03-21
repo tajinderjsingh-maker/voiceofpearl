@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Voice of Pearl</title>
+<title>Newsletter Experience</title>
 
 <style>
 *{box-sizing:border-box}
@@ -26,10 +26,10 @@ animation:bgMove 40s linear infinite}
 .card{position:absolute;left:50%;top:50%;width:clamp(180px,70vw,252px);aspect-ratio:252/370;border-radius:14px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,0.2);}
 .card img,.card video{width:100%;height:100%;object-fit:cover}
 
-.hint{position:absolute;bottom:80px;font-size:14px;opacity:.85;display:flex;gap:8px}
+.hint{position:absolute;bottom:90px;font-size:14px;opacity:.85;display:flex;gap:8px}
 
 /* youtube section */
-.videoSection{padding:40px 20px;display:flex;flex-direction:column;gap:24px}
+.videoSection{padding:20px 20px 40px;display:flex;flex-direction:column;gap:24px;margin-top:-80px}
 .videoBlock{display:flex;flex-direction:column;gap:10px}
 .videoBlock iframe{width:100%;height:200px;border-radius:12px;border:none}
 .videoTitle{font-size:14px;opacity:.85}
@@ -56,6 +56,23 @@ animation:bgMove 40s linear infinite}
   <div class="videoBlock">
     <iframe src="https://www.youtube.com/embed/998spY0pE6c" allowfullscreen></iframe>
     <div class="videoTitle">Success Stories | Pearl Academy Alumni Who Made It Big</div>
+  </div>
+</div>
+
+<!-- credits section -->
+<div style="padding:40px 20px;text-align:center;opacity:.85">
+  <div style="height:1px;background:rgba(255,255,255,0.2);margin-bottom:20px"></div>
+  <div style="font-size:14px;margin-bottom:12px">Team VoP</div>
+  <div style="font-size:12px;line-height:1.8">
+    Anusha Keshav<br>
+    Arjun Vasudev<br>
+    Harsh Mehta<br>
+    Paridhi<br>
+    Ravi Sharma<br>
+    Sri Devi<br>
+    Bhanu Pratap<br>
+    Tajinder Singh &<br>
+    Meha Jayaswal
   </div>
 </div>
 
@@ -94,7 +111,7 @@ function setContent(card,item,isCenter){
  if(item.type==='video'){
   const v=document.createElement('video')
   v.src=item.src
-  v.muted=true
+  v.muted=false
   v.loop=true
   v.playsInline=true
   if(isCenter){
