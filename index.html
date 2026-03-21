@@ -33,7 +33,7 @@ animation:bgMove 40s linear infinite}
 
 /* slightly more lift on smaller screens */
 @media (max-width: 480px){
-  .videoSection{margin-top:-90px}
+  .videoSection{margin-top:-110px}
 }
 .videoBlock{display:flex;flex-direction:column;gap:10px}
 .videoBlock iframe{width:100%;height:200px;border-radius:12px;border:none}
@@ -67,7 +67,7 @@ animation:bgMove 40s linear infinite}
 <!-- credits section -->
 <div style="padding:40px 20px;text-align:center;opacity:.85">
   <div style="height:1px;background:rgba(255,255,255,0.2);margin-bottom:20px"></div>
-  <div style="font-size:14px;margin-bottom:12px">Team VoP</div>
+  <div style="font-size:15px;margin-bottom:12px">Team VoP</div>
   <div style="font-size:12px;line-height:1.8">
     Anusha Keshav<br>
     Arjun Vasudev<br>
@@ -106,11 +106,12 @@ for(let i=0;i<VISIBLE;i++){
  const el=document.createElement('div')
  el.className='card'
  carousel.appendChild(el)
- cards.push({el, dataIndex:null, media:null})
+ cards.push({el, dataKey:null, media:null})
 }
 
 function setContent(card,item,isCenter){
- if(card.dataIndex===item.src) return
+ const key = item.type + '_' + item.src
+ if(card.dataKey===key) return
  card.el.innerHTML=''
 
  if(item.type==='video'){
@@ -119,8 +120,10 @@ function setContent(card,item,isCenter){
   v.muted=false
   v.loop=true
   v.playsInline=true
+  v.preload='auto'
   if(isCenter){
    v.autoplay=true
+   v.currentTime = 0
    v.play().catch(()=>{})
   }
   card.el.appendChild(v)
@@ -128,10 +131,11 @@ function setContent(card,item,isCenter){
  }else{
   const img=document.createElement('img')
   img.src=item.src
+  img.loading='lazy'
   card.el.appendChild(img)
   card.media=img
  }
- card.dataIndex=item.src
+ card.dataKey=key
 }
 
 function render(){
@@ -141,7 +145,10 @@ function render(){
   const i=base + s - Math.floor(VISIBLE/2)
   const card=cards[s]
   const item=data[i]
-  if(!item) continue
+  if(!item){
+    card.el.style.opacity=0
+    continue
+  }
 
   const offset=i-index
   const abs=Math.abs(offset)
